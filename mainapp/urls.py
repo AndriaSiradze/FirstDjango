@@ -18,7 +18,7 @@ from django.urls.conf import path
 
 from mainapp.apps import MainappConfig
 from mainapp.views import MainPageView, NewsPageView, CoursesPageView, ContactsPageView, DocSitePageView, LoginPageView, \
-    NewsWithPaginatorView
+    NewsWithPaginatorView, SearchRedirectView
 
 app_name = MainappConfig.name
 
@@ -31,4 +31,5 @@ urlpatterns = [
     path('contacts/', ContactsPageView.as_view(), name='contacts'),
     path('doc_site/', DocSitePageView.as_view(), name='doc_site'),
     path('login/', LoginPageView.as_view(), name='login'),
+    path("search/", SearchRedirectView.as_view(), name="search")
 ]

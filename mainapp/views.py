@@ -1,7 +1,8 @@
 from datetime import datetime
 
 from django.http.response import HttpResponse
-from django.shortcuts import render
+from django.shortcuts import render, redirect
+from django.utils.safestring import mark_safe
 from django.views.generic.base import View, TemplateView
 
 
@@ -49,3 +50,12 @@ class DocSitePageView(TemplateView):
 
 class LoginPageView(TemplateView):
     template_name = 'mainapp/login.html'
+
+class SearchRedirectView(View):
+
+    def get(self, request):
+        query = request.GET.get('query', '')
+        if query:
+            return redirect(f"https://www.google.com/search?q={query}")
+        else:
+            return HttpResponse("No search query provided.")
