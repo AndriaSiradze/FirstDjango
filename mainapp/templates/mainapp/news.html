@@ -1,31 +1,17 @@
 {% extends 'mainapp/base.html' %}
 {% block content %}
-    {% with range as double_range %}
-
         <div class="row">
             <div class="col-lg-8">
-                {% for i in double_range %}
+                {% for item in news %}
                     <div class="card my-2">
                         <div class="card-body">
-                            <h5 class="card-title">{{ news_title }}</h5>
-                            <h6 class="card-subtitle mb-2 text-muted">{{ datetime_obj|date:'Y-m-d h:i' }}</h6>
-                            <p class="card-text">{{ news_preview }}</p>
-                            <a href="#" class="card-link">Подробнее</a>
+                            <h5 class="card-title">{{ item.title }}</h5>
+                            <h6 class="card-subtitle mb-2 text-muted">{{ item.created|date:'Y-m-d h:i' }}</h6>
+                            <p class="card-text">{{ item.preamble }}</p>
+                            <a href="{% url 'mainapp:news_detail' pk=item.pk %}" class="card-link">Подробнее</a>
                         </div>
                     </div>
                 {% endfor %}
-                <div class="card my-2">
-                    <div class="card-body">
-                        <h5 class="card-title">News Title About sience</h5>
-                        <h6 class="card-subtitle mb-2 text-muted">No date</h6>
-                        <p class="card-text">Lorem ipsum dolor consectetur adipisicing elit. Asperiores
-                            blanditiis, deleniti doloribus ea eius esse eum excepturi ipsam laborum, maiores molestiae
-                            natus nihil obcaecati officiis optio repellat tempora vero voluptatem!</p>
-                            <a href="{% url 'mainapp:search' %}?query='technology'">Technology</a>
-
-                        <a href="#" class="card-link">Подробнее</a>
-                    </div>
-                </div>
             </div>
             <div class="col-lg-4">
                 <div class="card my-2 sticky-top">
@@ -71,5 +57,4 @@
                 </ul>
             </nav>
         </div>
-    {% endwith %}
 {% endblock content %}

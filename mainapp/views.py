@@ -1,9 +1,11 @@
 from datetime import datetime
 
 from django.http.response import HttpResponse
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.utils.safestring import mark_safe
 from django.views.generic.base import View, TemplateView
+
+from mainapp.models import News, Course, Lesson, CourseTeachers
 
 
 # Create your views here.
@@ -19,25 +21,56 @@ class NewsPageView(TemplateView):
     def get_context_data(self, **kwargs):
         # Get all previous data
         context = super().get_context_data(**kwargs)
-        # Create your own data
-        context["news_title"] = "Громкий новостной заголовок"
-        context["news_preview"] = "Предварительное описание, которое заинтересует каждого"
-        context["range"] = range(5)
-        context["datetime_obj"] = datetime.now()
+        context['news'] = News.objects.all()[:5]
+        return context
+
+
+class NewsPageDetailView(TemplateView):
+    template_name = "mainapp/news_detail.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        pk = self.kwargs.get("pk")
+        context["news_object"] = get_object_or_404(News, pk=pk)
         return context
 
 
 class NewsWithPaginatorView(NewsPageView):
 
-
     def get_context_data(self, page, **kwargs):
-        context = super().get_context_data(page=page,**kwargs)
+        context = super().get_context_data(page=page, **kwargs)
         context["page_num"] = page
         return context
 
 
 class CoursesPageView(TemplateView):
     template_name = 'mainapp/courses_list.html'
+
+
+class CoursesListView(TemplateView):
+    template_name = 'mainapp/courses_list.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['courses'] = Course.objects.all()
+        return context
+
+
+class CoursesDetailView(TemplateView):
+    template_name = "mainapp/courses_detail.html"
+
+    def get_context_data(self, pk=None, **kwargs):
+        context = super(CoursesDetailView, self).get_context_data(**kwargs)
+        context["course_object"] = get_object_or_404(
+            Course, pk=pk
+        )
+        context["lessons"] = Lesson.objects.filter(
+            course=context["course_object"]
+        )
+        context["teachers"] = CourseTeachers.objects.filter(
+            course=context["course_object"]
+        )
+        return context
 
 
 class ContactsPageView(TemplateView):
@@ -50,6 +83,7 @@ class DocSitePageView(TemplateView):
 
 class LoginPageView(TemplateView):
     template_name = 'mainapp/login.html'
+
 
 class SearchRedirectView(View):
 
