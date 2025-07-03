@@ -11,17 +11,20 @@ from django.utils.translation import gettext as _
 from authapp import models
 
 
-# Create your views here.
 class CustomLoginView(LoginView):
+    template_name = 'registration/login.html'
+    redirect_authenticated_user = True
+
     def form_valid(self, form):
-        ret = super().form_valid(form)
+        response = super().form_valid(form)
         message = _("Login success!<br>Hi, %(username)s") % {
-        "username": self.request.user.get_full_name()
-        if self.request.user.get_full_name()
-        else self.request.user.get_username()
+            "username": self.request.user.get_full_name() or self.request.user.get_username()
         }
-        messages.add_message(self.request, messages.INFO, mark_safe(message))
-        return ret
+        messages.info(self.request, mark_safe(message))
+        return response
+
+    def get_success_url(self):
+        return reverse_lazy('mainapp:index')
 
     def form_invalid(self, form):
         for _unused, msg in form.error_messages.items():
@@ -31,13 +34,12 @@ class CustomLoginView(LoginView):
             mark_safe(f"Something goes worng:<br>{msg}"),
             )
         return self.render_to_response(self.get_context_data(form=form))
-
 class CustomLogoutView(LogoutView):
+    next_page = reverse_lazy('authapp:login')
 
     def dispatch(self, request, *args, **kwargs):
-        messages.add_message(self.request, messages.INFO, _("See you later!"))
-        return super().dispatch(request, *args, **kwargs)\
-
+        messages.info(self.request, _("See you later!"))
+        return super().dispatch(request, *args, **kwargs)
 
 class RegisterView(TemplateView):
     template_name = "registration/register.html"

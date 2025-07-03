@@ -8,7 +8,6 @@ from django.views.generic.base import View, TemplateView
 from mainapp.models import News, Course, Lesson, CourseTeachers
 
 
-# Create your views here.
 
 
 class MainPageView(TemplateView):

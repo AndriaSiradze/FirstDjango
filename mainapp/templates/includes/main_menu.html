@@ -12,12 +12,10 @@
         </button>
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
             <ul class="navbar-nav mr-auto">
-                <li
-                        class="nav-item {% if request.resolver_match.view_name == 'mainapp:news' %}active{% endif %}">
+                <li class="nav-item {% if request.resolver_match.view_name == 'mainapp:news' %}active{% endif %}">
                     <a class="nav-link" href="{% url 'mainapp:news' %}">Новости</a>
                 </li>
-                <li
-                        class="nav-item {% if request.resolver_match.view_name == 'mainapp:courses' %}active{% endif %}">
+                <li class="nav-item {% if request.resolver_match.view_name == 'mainapp:courses' %}active{% endif %}">
                     <a class="nav-link" href="{% url 'mainapp:courses' %}">Курсы</a>
                 </li>
                 {% if user.is_authenticated %}
@@ -28,33 +26,35 @@
                             Профиль
                         </a>
                         <div class="dropdown-menu" aria-labelledby="ddProfile">
-                            <a class="dropdown-item"
-                               href="{% url 'authapp:profile_edit' %}">Редактировать
-                                профиль</a>
+                            <a class="dropdown-item" href="{% url 'authapp:profile_edit' pk=user.pk %}">
+                                Редактировать профиль
+                            </a>
                             <a class="dropdown-item" href="#">Мои курсы</a>
+                            {% if user.is_superuser %}
                             <div class="dropdown-divider"></div>
                             <a class="dropdown-item" href="#">Модерация</a>
-                            {% if user.is_superuser %}
-                                <a class="dropdown-item" href="#">Административный
-                                    раздел</a>
+                                <a class="dropdown-item" href={% url 'admin:index' %}>Административный раздел</a>
                             {% endif %}
                             <div class="dropdown-divider"></div>
-                            © geekbrains.ru 58
-                            <a class="dropdown-item" href="{% url 'authapp:logout' %}">Выход</a>
-                        </div>
+<form action="{% url 'authapp:logout' %}" method="post" class="dropdown-item p-0 m-0">
+  {% csrf_token %}
+  <button type="submit" class="btn btn-link w-100 text-left">Выход</button>
+</form>                        </div>
                     </li>
                 {% else %}
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'authapp:login' %}">Вход</a>
                     </li>
                 {% endif %}
-                <li
-                        class="nav-item {% if request.resolver_match.view_name == 'mainapp:contacts' %}active{% endif %}">
+                <li class="nav-item {% if request.resolver_match.view_name == 'mainapp:contacts' %}active{% endif %}">
                     <a class="nav-link" href="{% url 'mainapp:contacts' %}">Контакты</a>
                 </li>
             </ul>
-            <span><a href="#">󰐮</a> <i class="fas fa-grip-lines-vertical"></i> <a
-                    href="#">󰏅</a></span>
+            <span>
+                <a href="#">󰐮</a>
+                <i class="fas fa-grip-lines-vertical"></i>
+                <a href="#">󰏅</a>
+            </span>
         </div>
     </div>
 </nav>
