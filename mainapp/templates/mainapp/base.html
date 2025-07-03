@@ -42,7 +42,7 @@
             </p>
             <p>
             <ul class="list-unstyled">
-                <li><a href="{% url 'mainapp:index' %}">Домашняя</a></li>
+                <li><a href="{% url 'mainapp:main_page' %}">Домашняя</a></li>
                 <li><a href="{% url 'mainapp:news' %}">Новости</a></li>
                 {% if user.is_authenticated %}
                     <li><a href="{% url 'authapp:logout' %}">Выйти</a></li>

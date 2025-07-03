@@ -1,9 +1,14 @@
 from datetime import datetime
 
+from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.http.response import HttpResponse
 from django.shortcuts import render, redirect, get_object_or_404
+from django.urls.base import reverse_lazy
 from django.utils.safestring import mark_safe
 from django.views.generic.base import View, TemplateView
+from django.views.generic.detail import DetailView
+from django.views.generic.edit import CreateView, UpdateView, DeleteView
+from django.views.generic.list import ListView
 
 from mainapp.models import News, Course, Lesson, CourseTeachers
 
@@ -14,33 +19,35 @@ class MainPageView(TemplateView):
     template_name = 'mainapp/index.html'
 
 
-class NewsPageView(TemplateView):
-    template_name = 'mainapp/news.html'
+class NewsListView(ListView):
+    model = News
+    paginate_by = 5
 
-    def get_context_data(self, **kwargs):
-        # Get all previous data
-        context = super().get_context_data(**kwargs)
-        context['news'] = News.objects.all()[:5]
-        return context
+    def get_queryset(self):
+        return super().get_queryset().filter(deleted=False)
 
-
-class NewsPageDetailView(TemplateView):
-    template_name = "mainapp/news_detail.html"
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        pk = self.kwargs.get("pk")
-        context["news_object"] = get_object_or_404(News, pk=pk)
-        return context
+class NewsCreateView(PermissionRequiredMixin, CreateView):
+    model = News
+    fields = "__all__"
+    success_url = reverse_lazy("mainapp:news")
+    permission_required = ("mainapp.add_news",)
 
 
-class NewsWithPaginatorView(NewsPageView):
 
-    def get_context_data(self, page, **kwargs):
-        context = super().get_context_data(page=page, **kwargs)
-        context["page_num"] = page
-        return context
+class NewsDetailView(DetailView):
+    model = News
 
+
+class NewsUpdateView(PermissionRequiredMixin, UpdateView):
+    model = News
+    fields = "__all__"
+    success_url = reverse_lazy("mainapp:news")
+    permission_required = ("mainapp.change_news",)
+
+class NewsDeleteView(PermissionRequiredMixin, DeleteView):
+    model = News
+    success_url = reverse_lazy("mainapp:news")
+    permission_required = ("mainapp.delete_news",)
 
 class CoursesPageView(TemplateView):
     template_name = 'mainapp/courses_list.html'
@@ -82,7 +89,6 @@ class DocSitePageView(TemplateView):
 
 class LoginPageView(TemplateView):
     template_name = 'mainapp/../authapp/templates/authapp/login.html'
-
 
 class SearchRedirectView(View):
 
