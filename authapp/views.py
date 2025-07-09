@@ -28,7 +28,7 @@ class CustomLoginView(LoginView):
         return response
 
     def get_success_url(self):
-        return reverse_lazy('mainapp:index')
+        return reverse_lazy('mainapp:main_page')
 
     def form_invalid(self, form):
         for _unused, msg in form.error_messages.items():
