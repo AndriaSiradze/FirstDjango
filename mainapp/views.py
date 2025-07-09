@@ -1,100 +1,108 @@
-from datetime import datetime
-
-from django.contrib.auth.mixins import PermissionRequiredMixin
-from django.http.response import HttpResponse
-from django.shortcuts import render, redirect, get_object_or_404
-from django.urls.base import reverse_lazy
-from django.utils.safestring import mark_safe
-from django.views.generic.base import View, TemplateView
-from django.views.generic.detail import DetailView
-from django.views.generic.edit import CreateView, UpdateView, DeleteView
-from django.views.generic.list import ListView
-
-from mainapp.models import News, Course, Lesson, CourseTeachers
-
-
+from django.contrib.auth.mixins import (
+    LoginRequiredMixin,
+    PermissionRequiredMixin,
+)
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404
+from django.template.loader import render_to_string
+from django.urls import reverse_lazy
+from django.views.generic import (
+    CreateView,
+    DeleteView,
+    DetailView,
+    ListView,
+    TemplateView,
+    UpdateView,
+)
+from mainapp import forms as mainapp_forms
+from mainapp import models as mainapp_models
 
 
 class MainPageView(TemplateView):
-    template_name = 'mainapp/index.html'
+    template_name = "mainapp/index.html"
 
 
 class NewsListView(ListView):
-    model = News
+    model = mainapp_models.News
     paginate_by = 5
 
     def get_queryset(self):
         return super().get_queryset().filter(deleted=False)
 
+
 class NewsCreateView(PermissionRequiredMixin, CreateView):
-    model = News
+    model = mainapp_models.News
     fields = "__all__"
     success_url = reverse_lazy("mainapp:news")
     permission_required = ("mainapp.add_news",)
 
 
-
 class NewsDetailView(DetailView):
-    model = News
+    model = mainapp_models.News
 
 
 class NewsUpdateView(PermissionRequiredMixin, UpdateView):
-    model = News
+    model = mainapp_models.News
     fields = "__all__"
     success_url = reverse_lazy("mainapp:news")
     permission_required = ("mainapp.change_news",)
 
+
 class NewsDeleteView(PermissionRequiredMixin, DeleteView):
-    model = News
+    model = mainapp_models.News
     success_url = reverse_lazy("mainapp:news")
     permission_required = ("mainapp.delete_news",)
 
-class CoursesPageView(TemplateView):
-    template_name = 'mainapp/courses_list.html'
 
-
-class CoursesListView(TemplateView):
-    template_name = 'mainapp/courses_list.html'
+class CourseListView(TemplateView):
+    template_name = "mainapp/course_list.html"
 
     def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['courses'] = Course.objects.all()
+        context = super(CourseListView, self).get_context_data(**kwargs)
+        context["objects"] = mainapp_models.Course.objects.all()[:7]
         return context
 
 
-class CoursesDetailView(TemplateView):
-    template_name = "mainapp/courses_detail.html"
+class CourseDetailView(TemplateView):
+    template_name = "mainapp/course_detail.html"
 
     def get_context_data(self, pk=None, **kwargs):
-        context = super(CoursesDetailView, self).get_context_data(**kwargs)
+        context = super(CourseDetailView, self).get_context_data(**kwargs)
         context["course_object"] = get_object_or_404(
-            Course, pk=pk
+            mainapp_models.Course, pk=pk
         )
-        context["lessons"] = Lesson.objects.filter(
+        context["lessons"] = mainapp_models.Lesson.objects.filter(
             course=context["course_object"]
         )
-        context["teachers"] = CourseTeachers.objects.filter(
+        context["teachers"] = mainapp_models.CourseTeachers.objects.filter(
             course=context["course_object"]
         )
-        return context
+        if not self.request.user.is_anonymous:
+            if not mainapp_models.CourseFeedback.objects.filter(course=context["course_object"],
+                                                                user=self.request.user).count():
+                context["feedback_form"] = mainapp_forms.CourseFeedbackForm(
+                    course=context["course_object"], user=self.request.user)
+                context["feedback_list"] = mainapp_models.CourseFeedback.objects.filter(
+                    course=context["course_object"]
+                ).order_by("-created", "-rating")[:5]
+                return context
+
+
+class CourseFeedbackFormProcessView(LoginRequiredMixin, CreateView):
+    model = mainapp_models.CourseFeedback
+    form_class = mainapp_forms.CourseFeedbackForm
+
+    def form_valid(self, form):
+        self.object = form.save()
+        rendered_card = render_to_string(
+            "mainapp/includes/feedback_card.html", context={"item": self.object}
+        )
+        return JsonResponse({"card": rendered_card})
 
 
 class ContactsPageView(TemplateView):
-    template_name = 'mainapp/contacts.html'
+    template_name = "mainapp/contacts.html"
 
 
 class DocSitePageView(TemplateView):
-    template_name = 'mainapp/doc_site.html'
-
-
-class LoginPageView(TemplateView):
-    template_name = 'mainapp/../authapp/templates/authapp/login.html'
-
-class SearchRedirectView(View):
-
-    def get(self, request):
-        query = request.GET.get('query', '')
-        if query:
-            return redirect(f"https://www.google.com/search?q={query}")
-        else:
-            return HttpResponse("No search query provided.")
+    template_name = "mainapp/doc_site.html"

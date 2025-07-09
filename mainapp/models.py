@@ -1,4 +1,12 @@
+from django.contrib.auth import get_user_model
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db import models
+from django.http.response import JsonResponse
+from django.template.loader import render_to_string
+from django.views.generic.edit import CreateView
+
+
+
 
 
 class BaseModel(models.Model):
@@ -40,9 +48,12 @@ class News(BaseModel):
         ordering = ("-pk",)
         verbose_name_plural = "News"
         verbose_name = "News"
+
+
 class CoursesManager(models.Manager):
     def get_queryset(self):
         return super().get_queryset().filter(deleted=False)
+
 
 class Course(BaseModel):
     objects = CoursesManager()
@@ -89,4 +100,26 @@ class CourseTeachers(BaseModel):
         return "{0:0>3} {1} {2}".format(
             self.pk, self.name_second, self.name_first
         )
+
+
+class CourseFeedback(models.Model):
+    RATING = ((5, "⭐⭐⭐⭐⭐"), (4, "⭐⭐⭐⭐"), (3, "⭐⭐⭐"), (2, "⭐⭐"),
+              (1, "⭐"))
+    course = models.ForeignKey(
+        Course, on_delete=models.CASCADE, verbose_name="Course"
+    )
+    user = models.ForeignKey(
+        get_user_model(), on_delete=models.CASCADE, verbose_name="User"
+    )
+    feedback = models.TextField(
+        default=("No feedback"), verbose_name="Feedback"
+    )
+    rating = models.SmallIntegerField(
+        choices=RATING, default=5, verbose_name="Rating"
+    )
+    created = models.DateTimeField(auto_now_add=True, verbose_name="Created")
+    deleted = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"{self.course} ({self.user})"
 

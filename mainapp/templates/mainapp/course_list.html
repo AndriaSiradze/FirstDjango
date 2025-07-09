@@ -3,7 +3,7 @@
 {% block content %}
     <div class="row justify-content-center mt-3">
 
-        {% for course in courses %}
+        {% for course in objects %}
         <div class="card col-sm-12 col-md-6 col-lg-4 border-0">
             <a href="{% url 'mainapp:courses_detail' pk=course.pk %}">
                 <img src="{% static course.cover %}" class="card-img-top" alt="...">
