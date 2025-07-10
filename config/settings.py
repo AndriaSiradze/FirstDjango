@@ -25,7 +25,11 @@ SECRET_KEY = 'django-insecure-6plnzxat==p#45t0304^n*0jq3v=q15^r-8t9=8k%bp(!g&^&w
 DEBUG = True
 
 ALLOWED_HOSTS = ['0.0.0.0', '127.0.0.1']
-
+if DEBUG:
+    INTERNAL_IPS = [
+        "192.168.1.4",
+        "127.0.0.1",
+    ]
 # Application definition
 
 INSTALLED_APPS = [
@@ -40,7 +44,8 @@ INSTALLED_APPS = [
     'mainapp',
     'authapp',
     "crispy_forms",
-    "crispy_bootstrap4"
+    "crispy_bootstrap4",
+    'debug_toolbar'
 ]
 
 MIDDLEWARE = [
@@ -51,6 +56,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    "debug_toolbar.middleware.DebugToolbarMiddleware",
 ]
 
 ROOT_URLCONF = 'config.urls'
@@ -176,18 +182,22 @@ LOGGING = {
         },
     },
 }
-# LOGGING = {
-#     "version": 1,
-#     "disable_existing_loggers": False,
-#     "formatters": {
-#         "console": {
-#             "format": "[%(asctime)s] %(levelname)s %(name)s (%(lineno)d)% (message)s"
-#         },
-#     },
-#     "handlers": {
-#         "console": {"class": "logging.StreamHandler", "formatter": "console"},
-#     },
-#     "loggers": {
-#         "django": {"level": "INFO", "handlers": ["console"]},
-#     },
-# }
+
+# CACHE
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://127.0.0.1:6379",
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        },
+    }
+}
+
+# Celery
+
+CELERY_BROKER_URL = "redis://localhost:6379/0"
+CELERY_RESULT_BACKEND = "redis://localhost:6379/0"
+
+EMAIL_BACKEND = "django.core.mail.backends.filebased.EmailBackend"
+EMAIL_FILE_PATH = "var/email_messages/"

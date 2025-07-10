@@ -51,7 +51,7 @@ class CustomLogoutView(LogoutView):
 class RegisterView(CreateView):
     model = get_user_model()
     form_class = CustomUserCreationForm
-    success_url = reverse_lazy('mainapp:index')
+    success_url = reverse_lazy('mainapp:main_page')
 
 
 class ProfileEditView(UserPassesTestMixin, UpdateView):
